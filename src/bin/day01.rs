@@ -25,14 +25,16 @@ const WORD_PATTERNS: &[(&str, IntegerType)] = &[
 ];
 
 fn main() {
-    println!(
-        "Part 1: {}",
-        process_lines(INPUT, NUMBER_PATTERNS.into_iter())
-    );
-    println!(
-        "Part 2: {}",
-        process_lines(INPUT, NUMBER_PATTERNS.into_iter().chain(WORD_PATTERNS))
-    );
+    println!("Part 1: {}", solve_part_1(INPUT));
+    println!("Part 2: {}", solve_part_2(INPUT));
+}
+
+fn solve_part_1(input: &str) -> IntegerType {
+    process_lines(input, NUMBER_PATTERNS.iter())
+}
+
+fn solve_part_2(input: &str) -> IntegerType {
+    process_lines(input, NUMBER_PATTERNS.iter().chain(WORD_PATTERNS))
 }
 
 fn process_line<'a>(
@@ -80,7 +82,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_process_lines_part_1() {
+    fn test_solve_part_1() {
         const INPUT: &str = "
         1abc2
         pqr3stu8vwx
@@ -88,12 +90,12 @@ mod tests {
         treb7uchet
         ";
         const EXPECTED: IntegerType = 142;
-        let output = process_lines(INPUT, NUMBER_PATTERNS.into_iter());
+        let output = solve_part_1(INPUT);
         assert_eq!(output, EXPECTED);
     }
 
     #[test]
-    fn test_process_lines_part_2() {
+    fn test_solve_part_2() {
         const INPUT: &str = "
         two1nine
         eightwothree
@@ -104,7 +106,7 @@ mod tests {
         7pqrstsixteen
         ";
         const EXPECTED: IntegerType = 281;
-        let output = process_lines(INPUT, NUMBER_PATTERNS.into_iter().chain(WORD_PATTERNS));
+        let output = solve_part_2(INPUT);
         assert_eq!(output, EXPECTED);
     }
 }
