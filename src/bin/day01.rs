@@ -1,7 +1,7 @@
-type IntegerType = u32;
+type IntegerType = u16;
 
 const INPUT: &str = include_str!("../../data/day01.txt");
-const PATTERNS_PART_1: &[(&str, IntegerType)] = &[
+const NUMBER_PATTERNS: &[(&str, IntegerType)] = &[
     ("1", 1),
     ("2", 2),
     ("3", 3),
@@ -12,16 +12,7 @@ const PATTERNS_PART_1: &[(&str, IntegerType)] = &[
     ("8", 8),
     ("9", 9),
 ];
-const PATTERNS_PART_2: &[(&str, IntegerType)] = &[
-    ("1", 1),
-    ("2", 2),
-    ("3", 3),
-    ("4", 4),
-    ("5", 5),
-    ("6", 6),
-    ("7", 7),
-    ("8", 8),
-    ("9", 9),
+const WORD_PATTERNS: &[(&str, IntegerType)] = &[
     ("one", 1),
     ("two", 2),
     ("three", 3),
@@ -34,11 +25,20 @@ const PATTERNS_PART_2: &[(&str, IntegerType)] = &[
 ];
 
 fn main() {
-    println!("Part 1: {}", process_lines(INPUT, PATTERNS_PART_1));
-    println!("Part 2: {}", process_lines(INPUT, PATTERNS_PART_2));
+    println!(
+        "Part 1: {}",
+        process_lines(INPUT, NUMBER_PATTERNS.into_iter())
+    );
+    println!(
+        "Part 2: {}",
+        process_lines(INPUT, NUMBER_PATTERNS.into_iter().chain(WORD_PATTERNS))
+    );
 }
 
-fn process_line(input: &str, patterns: &[(&str, IntegerType)]) -> IntegerType {
+fn process_line<'a>(
+    input: &str,
+    patterns: impl Iterator<Item = &'a (&'a str, IntegerType)>,
+) -> IntegerType {
     let mut leftmost_index = usize::MAX;
     let mut leftmost_value = 0;
     let mut rightmost_index = usize::MIN;
@@ -64,11 +64,14 @@ fn process_line(input: &str, patterns: &[(&str, IntegerType)]) -> IntegerType {
     leftmost_value * 10 + rightmost_value
 }
 
-fn process_lines(input: &str, patterns: &[(&str, IntegerType)]) -> IntegerType {
+fn process_lines<'a>(
+    input: &str,
+    patterns: impl Iterator<Item = &'a (&'a str, IntegerType)> + Clone,
+) -> IntegerType {
     input
         .trim()
         .lines()
-        .map(|line| process_line(line, patterns))
+        .map(|line| process_line(line, patterns.clone()))
         .sum::<IntegerType>()
 }
 
@@ -85,7 +88,7 @@ mod tests {
         treb7uchet
         ";
         const EXPECTED: IntegerType = 142;
-        let output = process_lines(INPUT, PATTERNS_PART_1);
+        let output = process_lines(INPUT, NUMBER_PATTERNS.into_iter());
         assert_eq!(output, EXPECTED);
     }
 
@@ -101,7 +104,7 @@ mod tests {
         7pqrstsixteen
         ";
         const EXPECTED: IntegerType = 281;
-        let output = process_lines(INPUT, PATTERNS_PART_2);
+        let output = process_lines(INPUT, NUMBER_PATTERNS.into_iter().chain(WORD_PATTERNS));
         assert_eq!(output, EXPECTED);
     }
 }
