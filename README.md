@@ -14,7 +14,7 @@ cargo run --release --bin day01
 |:-:|:-:|:-:|
 |[Day 1: Trebuchet?!](https://adventofcode.com/2023/day/1)|:heavy_check_mark:|:heavy_check_mark:|
 |[Day 2: Cube Conundrum](https://adventofcode.com/2023/day/2)|:heavy_check_mark:|:heavy_check_mark:|
-|Day 3|:x:|:x:|
+|[Day 3: Gear Ratios](https://adventofcode.com/2023/day/3)|:heavy_check_mark:|:heavy_check_mark:|
 |Day 4|:x:|:x:|
 |Day 5|:x:|:x:|
 |Day 6|:x:|:x:|
