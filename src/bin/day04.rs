@@ -2,6 +2,7 @@ const INPUT: &str = include_str!("../../data/day04.txt");
 
 fn main() {
     println!("Part 1 => {}", solve_part_1(INPUT));
+    println!("Part 2 => {}", solve_part_2(INPUT));
 }
 
 fn count_matching_numbers_in_game(string: &str) -> usize {
@@ -28,6 +29,23 @@ fn score_game_for_part_1(string: &str) -> usize {
 
 fn solve_part_1(string: &str) -> usize {
     string.trim().lines().map(score_game_for_part_1).sum()
+}
+
+fn solve_part_2(string: &str) -> usize {
+    let counts: Vec<_> = string
+        .trim()
+        .lines()
+        .map(count_matching_numbers_in_game)
+        .collect();
+    let mut dp = vec![0; counts.len()];
+    for (index, count) in counts.into_iter().enumerate().rev() {
+        let mut total = 1;
+        for i in 1..=count {
+            total += dp[index + i];
+        }
+        dp[index] = total;
+    }
+    dp.into_iter().sum()
 }
 
 #[cfg(test)]
@@ -62,6 +80,21 @@ mod tests {
         ";
         const EXPECTED: usize = 13;
         let output = solve_part_1(INPUT);
+        assert_eq!(output, EXPECTED);
+    }
+
+    #[test]
+    fn test_solve_part_2() {
+        const INPUT: &str = "
+        Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+        Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
+        Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
+        Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
+        Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
+        Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
+        ";
+        const EXPECTED: usize = 30;
+        let output = solve_part_2(INPUT);
         assert_eq!(output, EXPECTED);
     }
 }
