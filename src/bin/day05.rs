@@ -240,7 +240,7 @@ fn map_range_with_envelops_relation(
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_parse_numbers_from_string() {
         const INPUT: &str = "seeds: 79 14 55 13";

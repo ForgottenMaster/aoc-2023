@@ -17,7 +17,7 @@ cargo run --release --bin day01
 |[Day 3: Gear Ratios](https://adventofcode.com/2023/day/3)|:heavy_check_mark:|:heavy_check_mark:|
 |[Day 4: Scratchcards](https://adventofcode.com/2023/day/4)|:heavy_check_mark:|:heavy_check_mark:|
 |[Day 5: If You Give A Seed A Fertilizer](https://adventofcode.com/2023/day/5)|:heavy_check_mark:|:heavy_check_mark:|
-|Day 6|:x:|:x:|
+|[Day 6: Wait For It](https://adventofcode.com/2023/day/6)|:heavy_check_mark:|:heavy_check_mark:|
 |Day 7|:x:|:x:|
 |Day 8|:x:|:x:|
 |Day 9|:x:|:x:|
