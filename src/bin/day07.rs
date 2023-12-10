@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 const INPUT: &str = include_str!("../../data/day07.txt");
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -95,26 +97,22 @@ fn count_values(hand: &[Value; 5]) -> [Option<(Value, u8)>; 5] {
         counts[index] = Some((*value, 1));
         index += 1;
     }
+    counts.sort_by(|count_1, count_2| match (count_1, count_2) {
+        (None, Some(_)) | (None, None) => Ordering::Greater,
+        (Some(_), None) => Ordering::Less,
+        (Some((_, count_1)), Some((_, count_2))) => count_2.cmp(count_1),
+    });
     counts
 }
 
 fn determine_hand_type(counts: &[Option<(Value, u8)>; 5]) -> HandType {
     match counts {
         [Some((_, 5)), ..] => HandType::FiveOfAKind,
-        [Some((_, 4)), Some((_, 1)), ..] | [Some((_, 1)), Some((_, 4)), ..] => {
-            HandType::FourOfAKind
-        }
-        [Some((_, 3)), Some((_, 2)), ..] | [Some((_, 2)), Some((_, 3)), ..] => HandType::FullHouse,
-        [Some((_, 3)), ..] | [_, Some((_, 3)), ..] | [_, _, Some((_, 3)), ..] => {
-            HandType::ThreeOfAKind
-        }
-        [Some((_, 2)), Some((_, 2)), ..]
-        | [Some((_, 2)), _, Some((_, 2)), ..]
-        | [_, Some((_, 2)), Some((_, 2)), ..] => HandType::TwoPair,
-        [Some((_, 2)), ..]
-        | [_, Some((_, 2)), ..]
-        | [_, _, Some((_, 2)), ..]
-        | [_, _, _, Some((_, 2)), _] => HandType::OnePair,
+        [Some((_, 4)), ..] => HandType::FourOfAKind,
+        [Some((_, 3)), Some((_, 2)), ..] => HandType::FullHouse,
+        [Some((_, 3)), ..] => HandType::ThreeOfAKind,
+        [Some((_, 2)), Some((_, 2)), ..] => HandType::TwoPair,
+        [Some((_, 2)), ..] => HandType::OnePair,
         _ => HandType::HighCard,
     }
 }
@@ -287,8 +285,8 @@ mod tests {
             Value::Two,
         ];
         const EXPECTED: [Option<(Value, u8)>; 5] = [
-            Some((Value::Two, 2)),
             Some((Value::Three, 3)),
+            Some((Value::Two, 2)),
             None,
             None,
             None,
@@ -402,8 +400,8 @@ mod tests {
     #[test]
     fn test_determine_hand_type_full_house() {
         const INPUT: [Option<(Value, u8)>; 5] = [
-            Some((Value::Two, 2)),
             Some((Value::Three, 3)),
+            Some((Value::Two, 2)),
             None,
             None,
             None,
