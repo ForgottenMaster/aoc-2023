@@ -34,6 +34,7 @@ enum HandType {
 struct Hand {
     hand_type: HandType,
     values: [Value; 5],
+    counts: [Option<(Value, u8)>; 5],
 }
 
 fn main() {
@@ -121,7 +122,11 @@ fn parse_hand(input: &str) -> Hand {
     let values = parse_hand_values(input);
     let counts = count_values(&values);
     let hand_type = determine_hand_type(&counts);
-    Hand { hand_type, values }
+    Hand {
+        hand_type,
+        counts,
+        values,
+    }
 }
 
 fn parse_hands_and_bids(input: &str) -> Vec<(Hand, u32)> {
@@ -472,6 +477,7 @@ mod tests {
         const INPUT: &str = "99999";
         const EXPECTED: Hand = Hand {
             hand_type: HandType::FiveOfAKind,
+            counts: [Some((Value::Nine, 5)), None, None, None, None],
             values: [
                 Value::Nine,
                 Value::Nine,
@@ -489,6 +495,13 @@ mod tests {
         const INPUT: &str = "99799";
         const EXPECTED: Hand = Hand {
             hand_type: HandType::FourOfAKind,
+            counts: [
+                Some((Value::Nine, 4)),
+                Some((Value::Seven, 1)),
+                None,
+                None,
+                None,
+            ],
             values: [
                 Value::Nine,
                 Value::Nine,
@@ -506,6 +519,13 @@ mod tests {
         const INPUT: &str = "99797";
         const EXPECTED: Hand = Hand {
             hand_type: HandType::FullHouse,
+            counts: [
+                Some((Value::Nine, 3)),
+                Some((Value::Seven, 2)),
+                None,
+                None,
+                None,
+            ],
             values: [
                 Value::Nine,
                 Value::Nine,
@@ -523,6 +543,13 @@ mod tests {
         const INPUT: &str = "69799";
         const EXPECTED: Hand = Hand {
             hand_type: HandType::ThreeOfAKind,
+            counts: [
+                Some((Value::Nine, 3)),
+                Some((Value::Six, 1)),
+                Some((Value::Seven, 1)),
+                None,
+                None,
+            ],
             values: [
                 Value::Six,
                 Value::Nine,
@@ -540,6 +567,13 @@ mod tests {
         const INPUT: &str = "69797";
         const EXPECTED: Hand = Hand {
             hand_type: HandType::TwoPair,
+            counts: [
+                Some((Value::Nine, 2)),
+                Some((Value::Seven, 2)),
+                Some((Value::Six, 1)),
+                None,
+                None,
+            ],
             values: [
                 Value::Six,
                 Value::Nine,
@@ -557,6 +591,13 @@ mod tests {
         const INPUT: &str = "69798";
         const EXPECTED: Hand = Hand {
             hand_type: HandType::OnePair,
+            counts: [
+                Some((Value::Nine, 2)),
+                Some((Value::Six, 1)),
+                Some((Value::Seven, 1)),
+                Some((Value::Eight, 1)),
+                None,
+            ],
             values: [
                 Value::Six,
                 Value::Nine,
@@ -574,6 +615,13 @@ mod tests {
         const INPUT: &str = "69738";
         const EXPECTED: Hand = Hand {
             hand_type: HandType::HighCard,
+            counts: [
+                Some((Value::Six, 1)),
+                Some((Value::Nine, 1)),
+                Some((Value::Seven, 1)),
+                Some((Value::Three, 1)),
+                Some((Value::Eight, 1)),
+            ],
             values: [
                 Value::Six,
                 Value::Nine,
@@ -599,6 +647,13 @@ mod tests {
             (
                 Hand {
                     hand_type: HandType::OnePair,
+                    counts: [
+                        Some((Value::Three, 2)),
+                        Some((Value::Two, 1)),
+                        Some((Value::Ten, 1)),
+                        Some((Value::King, 1)),
+                        None,
+                    ],
                     values: [
                         Value::Three,
                         Value::Two,
@@ -612,6 +667,13 @@ mod tests {
             (
                 Hand {
                     hand_type: HandType::ThreeOfAKind,
+                    counts: [
+                        Some((Value::Five, 3)),
+                        Some((Value::Ten, 1)),
+                        Some((Value::Jack, 1)),
+                        None,
+                        None,
+                    ],
                     values: [
                         Value::Ten,
                         Value::Five,
@@ -625,6 +687,13 @@ mod tests {
             (
                 Hand {
                     hand_type: HandType::TwoPair,
+                    counts: [
+                        Some((Value::King, 2)),
+                        Some((Value::Seven, 2)),
+                        Some((Value::Six, 1)),
+                        None,
+                        None,
+                    ],
                     values: [
                         Value::King,
                         Value::King,
@@ -638,6 +707,13 @@ mod tests {
             (
                 Hand {
                     hand_type: HandType::TwoPair,
+                    counts: [
+                        Some((Value::Ten, 2)),
+                        Some((Value::Jack, 2)),
+                        Some((Value::King, 1)),
+                        None,
+                        None,
+                    ],
                     values: [
                         Value::King,
                         Value::Ten,
@@ -651,6 +727,13 @@ mod tests {
             (
                 Hand {
                     hand_type: HandType::ThreeOfAKind,
+                    counts: [
+                        Some((Value::Queen, 3)),
+                        Some((Value::Jack, 1)),
+                        Some((Value::Ace, 1)),
+                        None,
+                        None,
+                    ],
                     values: [
                         Value::Queen,
                         Value::Queen,
