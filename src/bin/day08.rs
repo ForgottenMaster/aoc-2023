@@ -13,21 +13,44 @@ fn main() {
     println!("Part 2 => {}", solve_part_2(INPUT));
 }
 
-fn solve_part_1(input: &str) -> u32 {
-    let (mut sequence, mapping) = parse_input(input);
-    calculate_steps("AAA", |current| current == "ZZZ", &mut sequence, &mapping)
+fn solve_part_1(input: &str) -> u64 {
+    let (sequence, mapping) = parse_input(input);
+    calculate_steps("AAA", |current| current == "ZZZ", sequence, &mapping)
 }
 
-fn solve_part_2(_input: &str) -> u32 {
-    todo!()
+fn solve_part_2(input: &str) -> u64 {
+    let (sequence, mapping) = parse_input(input);
+    let mut cycles: Vec<_> = mapping
+        .keys()
+        .filter_map(|key| {
+            if key.ends_with('A') {
+                let cycle_length = calculate_steps(
+                    key,
+                    |current| current.ends_with('Z'),
+                    sequence.clone(),
+                    &mapping,
+                );
+                Some((cycle_length, cycle_length)) // (cycle length, total_steps)
+            } else {
+                None
+            }
+        })
+        .collect();
+    while cycles.iter().any(|(_, total)| *total != cycles[0].1) {
+        // while not all matching (arbitrarily) first one.
+        let (cycle_length, total_steps) =
+            cycles.iter_mut().min_by_key(|(_, total)| *total).unwrap();
+        *total_steps += *cycle_length;
+    }
+    cycles[0].1
 }
 
 fn calculate_steps(
     from: &str,
     terminates: impl Fn(&str) -> bool,
-    sequence: &mut impl Iterator<Item = Direction>,
+    mut sequence: impl Iterator<Item = Direction>,
     mapping: &HashMap<&str, (&str, &str)>,
-) -> u32 {
+) -> u64 {
     let mut count = 0;
     let mut current = from;
     while !terminates(current) {
@@ -40,7 +63,7 @@ fn calculate_steps(
     count
 }
 
-fn parse_move_sequence(input: &str) -> impl Iterator<Item = Direction> + '_ {
+fn parse_move_sequence(input: &str) -> impl Iterator<Item = Direction> + Clone + '_ {
     input
         .chars()
         .map(|c| match c {
@@ -61,7 +84,7 @@ fn parse_move(input: &str) -> (&str, &str, &str) {
 fn parse_input(
     input: &str,
 ) -> (
-    impl Iterator<Item = Direction> + '_,
+    impl Iterator<Item = Direction> + Clone + '_,
     HashMap<&str, (&str, &str)>,
 ) {
     let mut lines = input.lines().filter_map(|line| {
@@ -145,7 +168,7 @@ mod tests {
         GGG = (GGG, GGG)
         ZZZ = (ZZZ, ZZZ)
         ";
-        const EXPECTED: u32 = 2;
+        const EXPECTED: u64 = 2;
         let output = solve_part_1(INPUT);
         assert_eq!(output, EXPECTED);
     }
@@ -159,7 +182,7 @@ mod tests {
         BBB = (AAA, ZZZ)
         ZZZ = (ZZZ, ZZZ)
         ";
-        const EXPECTED: u32 = 6;
+        const EXPECTED: u64 = 6;
         let output = solve_part_1(INPUT);
         assert_eq!(output, EXPECTED);
     }
@@ -178,7 +201,7 @@ mod tests {
         22Z = (22B, 22B)
         XXX = (XXX, XXX)
         ";
-        const EXPECTED: u32 = 6;
+        const EXPECTED: u64 = 6;
         let output = solve_part_2(INPUT);
         assert_eq!(output, EXPECTED);
     }
