@@ -17,6 +17,7 @@ enum Value {
     Four,
     Three,
     Two,
+    Joker, // used as lowest card replacement for part 2
 }
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -39,10 +40,24 @@ struct Hand {
 
 fn main() {
     println!("Part 1 => {}", solve_part_1(INPUT));
+    println!("Part 2 => {}", solve_part_2(INPUT));
 }
 
 fn solve_part_1(input: &str) -> u32 {
     let mut hands_and_bids = parse_hands_and_bids(input);
+    hands_and_bids.sort_by(|hand_1, hand_2| hand_2.0.cmp(&hand_1.0));
+    hands_and_bids
+        .into_iter()
+        .enumerate()
+        .map(|(index, (_, bid))| (index as u32 + 1) * bid)
+        .sum()
+}
+
+fn solve_part_2(input: &str) -> u32 {
+    let mut hands_and_bids = parse_hands_and_bids(input);
+    hands_and_bids
+        .iter_mut()
+        .for_each(|(hand, _)| upgrade_hand_with_jacks_as_jokers(hand));
     hands_and_bids.sort_by(|hand_1, hand_2| hand_2.0.cmp(&hand_1.0));
     hands_and_bids
         .into_iter()
@@ -98,12 +113,28 @@ fn count_values(hand: &[Value; 5]) -> [Option<(Value, u8)>; 5] {
         counts[index] = Some((*value, 1));
         index += 1;
     }
+    sort_counts(&mut counts);
+    counts
+}
+
+fn sort_counts(counts: &mut [Option<(Value, u8)>]) {
     counts.sort_by(|count_1, count_2| match (count_1, count_2) {
         (None, Some(_)) | (None, None) => Ordering::Greater,
         (Some(_), None) => Ordering::Less,
         (Some((_, count_1)), Some((_, count_2))) => count_2.cmp(count_1),
     });
-    counts
+}
+
+fn pop_jack_count(counts: &mut [Option<(Value, u8)>]) -> u8 {
+    let mut count = 0;
+    for option in &mut *counts {
+        if matches!(option, Some((Value::Jack, _))) {
+            count = option.take().unwrap().1;
+            break;
+        }
+    }
+    sort_counts(counts);
+    count
 }
 
 fn determine_hand_type(counts: &[Option<(Value, u8)>; 5]) -> HandType {
@@ -140,6 +171,21 @@ fn parse_hands_and_bids(input: &str) -> Vec<(Hand, u32)> {
             (hand, bid)
         })
         .collect()
+}
+
+fn upgrade_hand_with_jacks_as_jokers(input: &mut Hand) {
+    let count = pop_jack_count(&mut input.counts);
+    if let Some((_, total)) = &mut input.counts[0] {
+        *total += count;
+    } else {
+        input.counts[0] = Some((Value::Ace, count));
+    }
+    input.hand_type = determine_hand_type(&input.counts);
+    input.values.iter_mut().for_each(|value| {
+        if *value == Value::Jack {
+            *value = Value::Joker
+        }
+    });
 }
 
 #[cfg(test)]
@@ -760,6 +806,164 @@ mod tests {
         ";
         const EXPECTED: u32 = 6440;
         let output = solve_part_1(INPUT);
+        assert_eq!(output, EXPECTED);
+    }
+
+    #[test]
+    fn test_pop_jack_count_some() {
+        let mut input = [
+            Some((Value::Ace, 3)),
+            Some((Value::Jack, 1)),
+            Some((Value::Eight, 1)),
+            None,
+        ];
+        const EXPECTED_SLICE: &[Option<(Value, u8)>] =
+            &[Some((Value::Ace, 3)), Some((Value::Eight, 1)), None, None];
+        const EXPECTED_VALUE: u8 = 1;
+        let output = pop_jack_count(&mut input);
+        assert_eq!(output, EXPECTED_VALUE);
+        assert_eq!(&input, EXPECTED_SLICE);
+    }
+
+    #[test]
+    fn test_pop_jack_count_none() {
+        let mut input = [
+            Some((Value::Ace, 3)),
+            Some((Value::King, 1)),
+            Some((Value::Eight, 1)),
+            None,
+        ];
+        const EXPECTED_SLICE: &[Option<(Value, u8)>] = &[
+            Some((Value::Ace, 3)),
+            Some((Value::King, 1)),
+            Some((Value::Eight, 1)),
+            None,
+        ];
+        const EXPECTED_VALUE: u8 = 0;
+        let output = pop_jack_count(&mut input);
+        assert_eq!(output, EXPECTED_VALUE);
+        assert_eq!(&input, EXPECTED_SLICE);
+    }
+
+    #[test]
+    fn test_upgrade_hand_with_jacks_as_jokers_some_jacks() {
+        let mut input = Hand {
+            values: [
+                Value::Seven,
+                Value::Seven,
+                Value::Eight,
+                Value::Jack,
+                Value::Nine,
+            ],
+            counts: [
+                Some((Value::Seven, 2)),
+                Some((Value::Eight, 1)),
+                Some((Value::Jack, 1)),
+                Some((Value::Nine, 1)),
+                None,
+            ],
+            hand_type: HandType::OnePair,
+        };
+        const EXPECTED: Hand = Hand {
+            values: [
+                Value::Seven,
+                Value::Seven,
+                Value::Eight,
+                Value::Joker,
+                Value::Nine,
+            ],
+            counts: [
+                Some((Value::Seven, 3)),
+                Some((Value::Eight, 1)),
+                Some((Value::Nine, 1)),
+                None,
+                None,
+            ],
+            hand_type: HandType::ThreeOfAKind,
+        };
+        upgrade_hand_with_jacks_as_jokers(&mut input);
+        assert_eq!(input, EXPECTED);
+    }
+
+    #[test]
+    fn test_upgrade_hand_with_jacks_as_jokers_no_jacks() {
+        let mut input = Hand {
+            values: [
+                Value::Seven,
+                Value::Seven,
+                Value::Eight,
+                Value::King,
+                Value::Nine,
+            ],
+            counts: [
+                Some((Value::Seven, 2)),
+                Some((Value::Eight, 1)),
+                Some((Value::King, 1)),
+                Some((Value::Nine, 1)),
+                None,
+            ],
+            hand_type: HandType::OnePair,
+        };
+        const EXPECTED: Hand = Hand {
+            values: [
+                Value::Seven,
+                Value::Seven,
+                Value::Eight,
+                Value::King,
+                Value::Nine,
+            ],
+            counts: [
+                Some((Value::Seven, 2)),
+                Some((Value::Eight, 1)),
+                Some((Value::King, 1)),
+                Some((Value::Nine, 1)),
+                None,
+            ],
+            hand_type: HandType::OnePair,
+        };
+        upgrade_hand_with_jacks_as_jokers(&mut input);
+        assert_eq!(input, EXPECTED);
+    }
+
+    #[test]
+    fn test_upgrade_hand_with_jacks_as_jokers_only_jacks() {
+        let mut input = Hand {
+            values: [
+                Value::Jack,
+                Value::Jack,
+                Value::Jack,
+                Value::Jack,
+                Value::Jack,
+            ],
+            counts: [Some((Value::Jack, 5)), None, None, None, None],
+            hand_type: HandType::FiveOfAKind,
+        };
+        const EXPECTED: Hand = Hand {
+            values: [
+                Value::Joker,
+                Value::Joker,
+                Value::Joker,
+                Value::Joker,
+                Value::Joker,
+            ],
+            counts: [Some((Value::Ace, 5)), None, None, None, None],
+            hand_type: HandType::FiveOfAKind,
+        };
+        upgrade_hand_with_jacks_as_jokers(&mut input);
+        assert_eq!(input, EXPECTED);
+    }
+
+    #[test]
+    fn test_solve_part_2() {
+        const INPUT: &str = "
+        32T3K 765
+        T55J5 684
+        KK677 28
+        KTJJT 220
+        QQQJA 483
+        ";
+        const EXPECTED: u32 = 5905;
+        let output = solve_part_2(INPUT);
         assert_eq!(output, EXPECTED);
     }
 }
