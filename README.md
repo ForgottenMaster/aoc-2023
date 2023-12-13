@@ -20,7 +20,7 @@ cargo run --release --bin day01
 |[Day 6: Wait For It](https://adventofcode.com/2023/day/6)|:heavy_check_mark:|:heavy_check_mark:|
 |[Day 7: Camel Cards](https://adventofcode.com/2023/day/7)|:heavy_check_mark:|:heavy_check_mark:|
 |[Day 8: Haunted Wasteland](https://adventofcode.com/2023/day/8)|:heavy_check_mark:|:heavy_check_mark:|
-|Day 9|:x:|:x:|
+|[Day 9: Mirage Maintenance](https://adventofcode.com/2023/day/9)|:heavy_check_mark:|:heavy_check_mark:|
 |Day 10|:x:|:x:|
 |Day 11|:x:|:x:|
 |Day 12|:x:|:x:|
